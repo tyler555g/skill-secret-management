@@ -159,8 +159,19 @@ function Invoke-VaultStore {
     $secret = Read-Host "Enter secret for $VaultKey" -AsSecureString
     $plain = ConvertFrom-SecureStringSafe $secret
     try {
-        $plain | vault kv put "secret/secret-ops/$VaultKey" value=- | Out-Null
-        Assert-NativeSuccess 'vault kv put'
+        # Use Process + StreamWriter to avoid PS pipeline appending trailing newline
+        $proc = [System.Diagnostics.Process]::new()
+        $proc.StartInfo.FileName = 'vault'
+        $proc.StartInfo.Arguments = "kv put `"secret/secret-ops/$VaultKey`" value=-"
+        $proc.StartInfo.UseShellExecute = $false
+        $proc.StartInfo.RedirectStandardInput = $true
+        $proc.StartInfo.RedirectStandardOutput = $true
+        $proc.StartInfo.RedirectStandardError = $true
+        $proc.Start() | Out-Null
+        $proc.StandardInput.Write($plain)
+        $proc.StandardInput.Close()
+        $proc.WaitForExit()
+        if ($proc.ExitCode -ne 0) { throw "vault kv put failed (exit $($proc.ExitCode))" }
     } finally {
         $plain = $null
     }

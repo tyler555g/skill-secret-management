@@ -155,12 +155,6 @@ _store_keyring() {
 _store_gcm() {
   local key="$1" store_rc=0
   read -rsp "Enter secret for $key: " val; echo
-  # GCM uses line-based git credential protocol — reject multiline secrets
-  if printf '%s' "$val" | grep -q $'\n'; then
-    echo "ERROR: GCM backend does not support multiline secrets (use Vault or Keychain instead)" >&2
-    val=""
-    return 1
-  fi
   printf 'protocol=https\nhost=secret-ops.local\npath=%s\nusername=secret-ops\npassword=%s\n\n' "$key" "$val" \
     | git -c credential.helper=manager -c credential.useHttpPath=true credential approve || store_rc=$?
   val=""
