@@ -29,7 +29,7 @@ git clone https://github.com/tyler555g/skill-secrets-setup.git ~/.copilot/skills
 |----|---------|-------------|------------|
 | **store** | `secret-ops.sh store KEY` | Interactive `read -rsp` → backend | Exit code |
 | **inject** | `secret-ops.sh inject KEY --confirm -- cmd args` | Retrieves secret, injects via subshell+exec | Command output |
-| **list** | `secret-ops.sh list` | Queries backend for key names | Key names |
+| **list** | `secret-ops.sh list` | Queries backend for key names | Key names (GCM: unsupported) |
 | **delete** | `secret-ops.sh delete KEY --confirm` | Removes from backend | Exit code |
 | **exists** | `secret-ops.sh exists KEY` | Checks backend | Exit 0=yes, 1=no |
 

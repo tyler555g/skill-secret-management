@@ -90,7 +90,11 @@ function ConvertFrom-SecureStringSafe {
     }
 }
 
-# ── GCM helpers (deterministic: force manager helper + useHttpPath) ───────────
+# ── Native command exit code helper ──────────────────────────────────────────
+function Assert-NativeSuccess {
+    param([string]$Context = 'Native command')
+    if ($LASTEXITCODE -ne 0) { throw "$Context failed (exit code $LASTEXITCODE)" }
+}
 $GcmGitArgs = @('-c', 'credential.helper=manager', '-c', 'credential.useHttpPath=true')
 
 function Invoke-GcmStore {
@@ -100,6 +104,7 @@ function Invoke-GcmStore {
     try {
         $input = "protocol=https`nhost=secret-ops.local`npath=$GcmKey`nusername=secret-ops`npassword=$plain`n`n"
         $input | git @GcmGitArgs credential approve
+        Assert-NativeSuccess 'git credential approve'
     } finally {
         $plain = $null
     }
@@ -124,7 +129,9 @@ function Remove-GcmSecret {
     $input = "protocol=https`nhost=secret-ops.local`npath=$GcmKey`nusername=secret-ops`n`n"
     try {
         $fill = $input | git @GcmGitArgs credential fill 2>$null
+        Assert-NativeSuccess 'git credential fill'
         "$fill`n`n" | git @GcmGitArgs credential reject
+        Assert-NativeSuccess 'git credential reject'
     } catch {
         "protocol=https`nhost=secret-ops.local`npath=$GcmKey`nusername=secret-ops`npassword=x`n`n" | git @GcmGitArgs credential reject
     }
@@ -137,6 +144,7 @@ function Invoke-VaultStore {
     $plain = ConvertFrom-SecureStringSafe $secret
     try {
         $plain | vault kv put "secret/secret-ops/$VaultKey" value=- | Out-Null
+        Assert-NativeSuccess 'vault kv put'
     } finally {
         $plain = $null
     }
@@ -232,7 +240,10 @@ try {
             $backend = Get-Backend
             switch ($backend) {
                 'gcm'   { Write-Host '(GCM does not support list — use OS credential manager UI)' }
-                'vault' { vault kv list secret/secret-ops/ 2>$null }
+                'vault' {
+                    vault kv list secret/secret-ops/ 2>$null
+                    Assert-NativeSuccess 'vault kv list'
+                }
                 default { throw "Unsupported backend '$backend'" }
             }
             Write-Audit -Op list -Rc 0
@@ -252,7 +263,10 @@ try {
             $backend = Get-Backend
             switch ($backend) {
                 'gcm'   { Remove-GcmSecret $Key }
-                'vault' { vault kv delete "secret/$Key" 2>$null | Out-Null }
+                'vault' {
+                    vault kv delete "secret/secret-ops/$Key" 2>$null | Out-Null
+                    Assert-NativeSuccess 'vault kv delete'
+                }
                 default { throw "Unsupported backend '$backend'" }
             }
             Write-Audit -Op delete -AuditKey $Key -Rc 0

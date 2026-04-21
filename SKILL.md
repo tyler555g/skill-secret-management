@@ -34,7 +34,7 @@ Secure secret operations with an inject model. The agent orchestrates; trusted s
 |----|---------|------------|
 | **store** | `secret-ops.sh store KEY` | Exit code only |
 | **inject** | `secret-ops.sh inject KEY --confirm -- cmd args…` | Command stdout (not the secret) |
-| **list** | `secret-ops.sh list` | Key names only |
+| **list** | `secret-ops.sh list` | Key names (GCM: unsupported) |
 | **delete** | `secret-ops.sh delete KEY --confirm` | Exit code only |
 | **exists** | `secret-ops.sh exists KEY` | Exit code: 0 = yes, 1 = no |
 

@@ -102,7 +102,7 @@ _ensure_backend() {
       fi
       sleep 0.1
     done
-    trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT
+    trap "rmdir '${lock_dir}' 2>/dev/null || true" EXIT
     # Re-check after acquiring lock
     if [ -f "$BACKEND_FILE" ]; then
       cat "$BACKEND_FILE"

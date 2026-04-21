@@ -1,7 +1,7 @@
 {
   "name": "@tyler.given/skill-secrets-setup",
   "version": "0.2.0",
-  "description": "Copilot skill for secure secret management \u2014 inject model where agent never sees values",
+  "description": "Copilot skill for secure secret management \u2014 inject model where script code paths never expose values to agent",
   "keywords": [
     "copilot",
     "github-copilot",
