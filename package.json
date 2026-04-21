@@ -1,6 +1,6 @@
 {
-  "name": "@tyler.given/skill-secrets-setup",
-  "version": "0.2.0",
+  "name": "@tyler.given/skill-secret-management",
+  "version": "0.2.1",
   "description": "Copilot skill for secure secret management \u2014 inject model where script code paths never expose values to agent",
   "keywords": [
     "copilot",
@@ -15,10 +15,10 @@
     "security",
     "inject-model"
   ],
-  "homepage": "https://github.com/tyler555g/skill-secrets-setup",
+  "homepage": "https://github.com/tyler555g/skill-secret-management",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tyler555g/skill-secrets-setup.git"
+    "url": "git+https://github.com/tyler555g/skill-secret-management.git"
   },
   "license": "MIT",
   "author": "tyler555g",

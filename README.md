@@ -1,4 +1,4 @@
-# skill-secrets-setup
+# skill-secret-management
 
 Copilot skill for secure secret management using an **inject model** — the agent orchestrates operations but **never sees secret values through script code paths**. The injected subprocess is agent-chosen and may produce output containing the value — use purpose-built commands.
 
@@ -20,7 +20,7 @@ Agent (LLM context)          │  Script (subprocess)
 ## Install
 
 ```bash
-git clone https://github.com/tyler555g/skill-secrets-setup.git ~/.copilot/skills/secrets-setup
+git clone https://github.com/tyler555g/skill-secret-management.git ~/.copilot/skills/secret-management
 ```
 
 ## Operations
