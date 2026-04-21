@@ -118,7 +118,7 @@ _ensure_backend() {
 # ── Backend operations ───────────────────────────────────────────────────────
 
 # -- Store (secrets via stdin, never argv) --
-_store_keychain()  { security add-generic-password -a "$(whoami)" -s "$1" -w -U; }
+_store_keychain()  { security add-generic-password -a "$(whoami)" -s "$1" -U -w; }
 _store_keyring() {
   local key="$1"
   read -rsp "Enter secret for $key: " val; echo
@@ -226,10 +226,9 @@ main() {
       backend=$(_ensure_backend) || exit 1
       local val
       val=$(_dispatch get "$backend" "$key") || { echo "ERROR: Secret '$key' not found" >&2; _audit inject "$key" 1; exit 1; }
-      _audit inject "$key" 0
       # Inject via subshell+exec: secret is in shell memory only, never in argv
-      (export "${key}=${val}"; val=""; exec "$@")
-      rc=$?
+      (export "${key}=${val}"; val=""; exec "$@") && rc=0 || rc=$?
+      _audit inject "$key" "$rc"
       exit "$rc"
       ;;
 

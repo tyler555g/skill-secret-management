@@ -187,9 +187,8 @@ try {
                 'vault' { Invoke-VaultGet $Key }
                 default { throw "Unsupported backend '$backend'" }
             }
-            Write-Audit -Op inject -AuditKey $Key -Rc 0
-
             # Launch as real child process with scoped env (ProcessStartInfo)
+            $procRc = 1
             try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
                 $psi.FileName = $cmd[0]
@@ -210,10 +209,12 @@ try {
                 $psi.EnvironmentVariables[$Key] = $val
                 $proc = [System.Diagnostics.Process]::Start($psi)
                 $proc.WaitForExit()
-                exit $proc.ExitCode
+                $procRc = $proc.ExitCode
             } finally {
                 $val = $null
             }
+            Write-Audit -Op inject -AuditKey $Key -Rc $procRc
+            exit $procRc
         }
 
         'list' {
