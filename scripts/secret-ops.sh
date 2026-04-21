@@ -257,9 +257,11 @@ main() {
 
       local backend rc=0
       backend=$(_ensure_backend) || exit 1
-      # Avoid command substitution ($()) which strips trailing newlines
+      # Avoid command substitution ($()) which strips ALL trailing newlines
       local val
       IFS= read -r -d '' val < <(_dispatch get "$backend" "$key"; printf '\0') || true
+      # Strip single trailing newline added by command stdout (not part of value)
+      val="${val%$'\n'}"
       [ -z "$val" ] && { echo "ERROR: Secret '$key' not found" >&2; _audit inject "$key" 1; exit 1; }
       # Inject via subshell+exec: secret is in shell memory only, never in argv
       (export "${key}=${val}"; val=""; exec "$@") && rc=0 || rc=$?
