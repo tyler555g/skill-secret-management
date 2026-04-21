@@ -134,6 +134,7 @@ function Remove-GcmSecret {
         Assert-NativeSuccess 'git credential reject'
     } catch {
         "protocol=https`nhost=secret-ops.local`npath=$GcmKey`nusername=secret-ops`npassword=x`n`n" | git @GcmGitArgs credential reject
+        Assert-NativeSuccess 'git credential reject (fallback)'
     }
 }
 
@@ -212,9 +213,18 @@ try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
                 $psi.FileName = $cmd[0]
                 if ($cmd.Length -gt 1) {
-                    # Quote arguments containing whitespace to preserve boundaries
+                    # Proper Windows command-line argument quoting (handles backslash+quote)
                     $quotedArgs = $cmd[1..($cmd.Length-1)] | ForEach-Object {
-                        if ($_ -match '\s|"') { '"{0}"' -f ($_ -replace '"', '\"') } else { $_ }
+                        if ($_ -eq '') {
+                            '""'
+                        } elseif ($_ -match '[\s"]') {
+                            # Escape backslash runs preceding quotes or end-of-string, then wrap
+                            $escaped = [regex]::Replace($_, '(\\*)"', '$1$1\"')
+                            $escaped = [regex]::Replace($escaped, '(\\+)$', '$1$1')
+                            "`"$escaped`""
+                        } else {
+                            $_
+                        }
                     }
                     $psi.Arguments = $quotedArgs -join ' '
                 }
