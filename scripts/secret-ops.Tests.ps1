@@ -106,12 +106,23 @@ Describe "Unified secret-ops Tests" {
             { Main } | Should Throw "inject requires -Confirm flag (approval gate)"
         }
 
-        It "Fails if '--' separator is missing" {
+        It "Succeeds even if '--' separator is missing (Flexible Parsing)" {
+            Mock Get-SecretVault { return @{ Name = "secret-ops" } }
+            Mock Get-Secret { return "secret-value-123" }
+            $tmpFile = [System.IO.Path]::GetTempFileName()
+
             $script:Operation = 'inject'
             $script:Key = 'MY_SECRET'
             $script:Confirm = $true
-            $script:RemainingArgs = @("cmd", "/c", "echo hi")
-            { Main } | Should Throw "Missing '--' separator before command"
+            # No '--' here, testing the new flexible logic
+            $script:RemainingArgs = @("cmd", "/c", "echo %MY_SECRET% > $tmpFile")
+
+             Main
+
+            $fileContent = Get-Content $tmpFile
+            ($fileContent -match "secret-value-123") | Should Be $true
+
+            Remove-Item $tmpFile
         }
 
         It "Successfully injects secret into environment" {
