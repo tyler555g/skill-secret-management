@@ -77,7 +77,7 @@ function Get-Backend {
         # Re-check after lock
         if (Test-Path $BackendFile) { return (Get-Content $BackendFile).Trim() }
 
-        # Detect: Vault → GCM → SecretStore  (use $LASTEXITCODE for native commands)
+        # Detect: Vault → SecretStore → GCM  (use $LASTEXITCODE for native commands)
         if ($env:VAULT_ADDR -and (Get-Command vault -ErrorAction SilentlyContinue)) {
             # VAULT_ADDR set + vault exists = user intends Vault — fail closed on any issue
             vault token lookup 2>$null | Out-Null
@@ -94,14 +94,14 @@ function Get-Backend {
             }
             throw "Vault is configured (VAULT_ADDR set, token valid) but probe to secret/secret-ops/ failed. Fix Vault permissions, or remove `$env:VAULT_ADDR to use a local backend."
         }
-        if (Get-Command git -ErrorAction SilentlyContinue) {
-            git credential-manager --version 2>$null | Out-Null
-            if ($LASTEXITCODE -eq 0) { 'gcm' | Out-File $BackendFile -NoNewline -Encoding utf8; return 'gcm' }
-        }
         if (Get-Module Microsoft.PowerShell.SecretManagement -ListAvailable -ErrorAction SilentlyContinue) {
             if (Get-Module Microsoft.PowerShell.SecretStore -ListAvailable -ErrorAction SilentlyContinue) {
                 $SECRET_STORE | Out-File $BackendFile -NoNewline -Encoding utf8; return $SECRET_STORE
             }
+        }
+        if (Get-Command git -ErrorAction SilentlyContinue) {
+            git credential-manager --version 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { 'gcm' | Out-File $BackendFile -NoNewline -Encoding utf8; return 'gcm' }
         }
         throw 'No supported secret backend found'
     } finally {
